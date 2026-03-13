@@ -1,0 +1,100 @@
+/** Ej 3 */
+MEETING = (hello -> converse -> goodbye -> STOP).
+
+JOB = (arrive -> work -> leave -> JOB).
+
+MOVIE = (ahead -> (right -> MOVIE | left -> STOP)).
+
+GAME = ({one,two} -> WINE | tree -> lose -> GAME),
+WINE = (wine -> GAME).
+
+FOURTICK = (tick -> tick -> tick -> tick -> STOP).
+
+range R = 1..3
+DOUBLE = (in[i:R] -> out[i] -> DOUBLE).
+
+PERSON = ( 
+    weekend -> sleep -> {play,shop} -> PERSON 
+    | 
+    weekend -> sleep -> work -> PERSON 
+).
+
+/** Ej 4 */
+/** TODO: Cual esta bien? */
+
+/** ------------------------- OPCIÓN 1 ------------------------------*/
+const N = 2
+range R = 0..N
+
+VARIABLE = VARIABLE[0],
+
+VARIABLE[v:R] = (
+      write[x:R] -> VARIABLE[x]
+    | read[v]    -> VARIABLE[v]
+).
+
+/** ------------------------- OPCIÓN 2 ------------------------------*/
+const N = 2
+range R = 0..N
+
+VARIABLE = VARIABLE[0],
+
+VARIABLE[v:R] = (
+      write[x:R] -> VARIABLE[x]
+    | read[y:R] -> VARIABLE[y]
+).
+
+/** Ej 5  (flip-flop)*/
+/** TODO: Cual esta bien? */
+
+/** ------------------------- OPCIÓN 1 ------------------------------*/
+range R = 0..1
+
+BISTABLE = BISTABLE[0],
+BISTABLE[v:R] = (trigger -> BISTABLE[1-v]).
+
+/** Alternativamente /*
+range R = 0..1
+
+BISTABLE = BISTABLE[0],
+BISTABLE[0] = (trigger -> BISTABLE[1]),
+BISTABLE[1] = (trigger -> BISTABLE[0]).
+
+
+BISTABLE = BISTABLE0,
+BISTABLE0 = (trigger -> out.1 -> BISTABLE1),
+BISTABLE1 = (trigger -> out.0 -> BISTABLE0).
+
+/** ------------------------- OPCIÓN 2 ------------------------------*/
+BISTABLE = FLIP,
+FLIP = (trigger -> zero -> FLOP),
+FLOP = (trigger -> one  -> FLIP).
+
+/** Ej 6 */
+const MIN = 2
+const MAX = 8
+range R = 0..9
+
+SENSOR = SENSOR[5],
+
+SENSOR[n:R] = (
+	                            to[i:R] -> SENSOR[i]
+    | when (n <= MIN)           bajo    -> SENSOR[n]
+    | when (n > MIN && n < MAX) normal  -> SENSOR[n]
+    | when (n >= MAX)           alto    -> SENSOR[n]
+).
+
+/** Alternativamente /*
+const MIN = 2
+const MAX = 8
+range R = 0..9
+
+SENSOR = SENSOR[5],
+
+SENSOR[n:R] = (
+	  when (n > 1)                to     -> SENSOR[n-1]
+	| when (n < 9)                to     -> SENSOR[n+1]
+    | when (n < MIN)              bajo   -> SENSOR[n]
+    | when (n >= MIN && n <= MAX) normal -> SENSOR[n]
+    | when (n > MAX)              alto   -> SENSOR[n]
+).
