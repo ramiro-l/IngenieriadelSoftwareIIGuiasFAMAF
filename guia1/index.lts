@@ -130,6 +130,23 @@ DEVOLVER15 = (devolver15 -> DAR_PRODUCTO),
 
 DAR_PRODUCTO = (darProducto -> MAQUINA).
 
+/* . . Alternativa  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
+
+const PRECIO_PRODUCTO = 15
+range RANGO_DINERO = 0..100
+
+MAQUINA = MAQUINA[0],
+
+MAQUINA[d:RANGO_DINERO] = (
+      when (d == PRECIO_PRODUCTO) entregar_producto -> MAQUINA
+        
+    | when (d > PRECIO_PRODUCTO) dar_vuelto[d - PRECIO_PRODUCTO] -> MAQUINA[PRECIO_PRODUCTO]
+        
+    | when (d < PRECIO_PRODUCTO) c[5]  -> MAQUINA[d + 5]
+    | when (d < PRECIO_PRODUCTO) c[10] -> MAQUINA[d + 10]
+    | when (d < PRECIO_PRODUCTO) c[20] -> MAQUINA[d + 20]
+).
+
 /* ========================================================================== */
 /*  Ejercicio 8                                                               */
 /* ========================================================================== */
