@@ -17,9 +17,8 @@ range R = 1..3
 DOUBLE = (in[i:R] -> out[i] -> DOUBLE).
 
 PERSON = ( 
-    weekend -> sleep -> {play,shop} -> PERSON 
-    | 
-    weekend -> sleep -> work -> PERSON 
+      weekend -> sleep -> {play,shop} -> PERSON 
+    | weekend -> sleep -> work -> PERSON 
 ).
 
 /* ========================================================================== */

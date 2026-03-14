@@ -2,5 +2,8 @@
     "editor.rulers": [80],
     "material-icon-theme.files.associations": {
         "*.lts": "graphql"
-    }
+    },
+    "cSpell.words": [
+        "FOURTICK"
+    ]
 }
