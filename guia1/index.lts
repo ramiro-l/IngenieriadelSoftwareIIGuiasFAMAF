@@ -110,3 +110,21 @@ SENSOR[n:R] = (
     | when (n >= MIN && n <= MAX) normal -> SENSOR[n]
     | when (n > MAX)              alto   -> SENSOR[n]
 ).
+
+/* ========================================================================== */
+/*  Ejercicio 7                                                               */
+/* ========================================================================== */
+
+MAQUINA = INICIO,
+
+INICIO = (c5 -> FALTAN10 | c10 -> FALTAN5 | c20 -> DEVOLVER5),
+
+FALTAN10 = (c5 -> FALTAN5 | c10 -> DAR_PRODUCTO | c20 -> DEVOLVER10),
+FALTAN5 = (c5 -> DAR_PRODUCTO | c10 -> DEVOLVER5 | c20 -> DEVOLVER15),
+
+DEVOLVER5 = (devolver5 -> DAR_PRODUCTO),
+DEVOLVER10 = (devolver10 -> DAR_PRODUCTO),
+DEVOLVER15 = (devolver15 -> DAR_PRODUCTO),
+
+DAR_PRODUCTO = (darProducto -> MAQUINA).
+
