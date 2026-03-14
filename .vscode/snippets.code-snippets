@@ -1,0 +1,41 @@
+{
+  "Comment": {
+    "prefix": "comment",
+    "body": [
+      "/* ${1:} */"
+    ],
+    "description": "Comment"
+  },
+  "Section Title Base": {
+    "prefix": "title",
+    "body": [
+      "/* ========================================================================== */",
+      "/*                               ${1:Title}                                   */",
+      "/* ========================================================================== */",
+    ],
+    "description": "Section Title Base"
+  },
+  "Section Title EJ": {
+    "prefix": "title.ej",
+    "body": [
+        "/* ========================================================================== */",
+        "/*  Ejercicio ${1:number}                                                     */",
+        "/* ========================================================================== */"
+    ],
+    "description": "Section Title EJ"
+  },
+  "Small Divider Line": {
+    "prefix": "divider.line",
+    "body": [
+      "/* ---- ${1:Title} ---------------------------------------------------------- */"
+    ],
+    "description": "Small divider line"
+  },
+  "Small Divider Point": {
+    "prefix": "divider.point",
+    "body": [
+      "/* . . ${1:Title} . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . */",
+    ],
+    "description": "Small divider point"
+  },
+}
