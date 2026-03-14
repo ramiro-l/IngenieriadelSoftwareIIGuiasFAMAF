@@ -1,3 +1,9 @@
 {
-    "editor.rulers": [80]
+    "editor.rulers": [80],
+    "files.associations": {
+        "*.lts": "efpss"
+    },
+    "material-icon-theme.files.associations": {
+        "*.lts": "graphql"
+    }
 }
