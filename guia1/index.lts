@@ -89,13 +89,17 @@ range R = 0..9
 SENSOR = SENSOR[5],
 
 SENSOR[n:R] = (
-	                            to[i:R] -> SENSOR[i]
-    | when (n <= MIN)           bajo    -> SENSOR[n]
-    | when (n > MIN && n < MAX) normal  -> SENSOR[n]
-    | when (n >= MAX)           alto    -> SENSOR[n]
+	  when (n != 0)               to[n-1] -> SENSOR[n-1]
+	| when (n != 9)               to[n+1] -> SENSOR[n+1]
+    | when (n < MIN)              bajo    -> SENSOR[n]
+    | when (n >= MIN && n <= MAX) normal  -> SENSOR[n]
+    | when (n > MAX)              alto    -> SENSOR[n]
 ).
 
-/* . . Alternativamente . . . . . . . . . . . . . . . . . . . . . . . . . . . */
+/* . . Alternativa  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
+/*     En esta opción, permitimos que el sensor pueda ir a cualquier valor,   */
+/*     es decir que no hace falta incrementar de uno en uno.                  */
+
 const MIN = 2
 const MAX = 8
 range R = 0..9
@@ -103,11 +107,10 @@ range R = 0..9
 SENSOR = SENSOR[5],
 
 SENSOR[n:R] = (
-	  when (n > 1)                to     -> SENSOR[n-1]
-	| when (n < 9)                to     -> SENSOR[n+1]
-    | when (n < MIN)              bajo   -> SENSOR[n]
-    | when (n >= MIN && n <= MAX) normal -> SENSOR[n]
-    | when (n > MAX)              alto   -> SENSOR[n]
+	                            to[i:R] -> SENSOR[i]
+    | when (n <= MIN)           bajo    -> SENSOR[n]
+    | when (n > MIN && n < MAX) normal  -> SENSOR[n]
+    | when (n >= MAX)           alto    -> SENSOR[n]
 ).
 
 /* ========================================================================== */
