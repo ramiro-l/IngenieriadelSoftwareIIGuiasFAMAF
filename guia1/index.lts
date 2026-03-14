@@ -147,3 +147,34 @@ ON[f:MIN_FREQ..MAX_FREQ] = (
     | found   -> READY
     | when (f > MIN_FREQ) to[f-1] -> ON[f-1]
 ).
+
+/* ========================================================================== */
+/*  Ejercicio 9                                                               */
+/* ========================================================================== */
+
+P = (a -> b -> P).
+Q = (c -> b -> Q).
+||S1 = (P || Q).
+S2 = (a -> c -> b -> S2 | c -> a -> b -> S2).4
+
+/* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+TODO: ¿Esto es suficiente?
+RESPUESTA: 
+
+En `||S1 = P || Q` las acciones a y c pueden intercalarse.
+Luego deben sincronizarse para ejecutar la acción b.
+
+Entonces las únicas formas de intercalar a y c son:
+a -> c
+c -> a
+
+Y luego sincronizarse con b, por lo tanto las únicas trazas posibles son:
+a -> c -> b
+c -> a -> b
+
+Esto corresponde exactamente a
+
+S2 = (a -> c -> b -> S2 | c -> a -> b -> S2)
+
+Por lo tanto S1 y S2 tienen el mismo comportamiento.
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
