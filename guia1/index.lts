@@ -128,3 +128,22 @@ DEVOLVER15 = (devolver15 -> DAR_PRODUCTO),
 
 DAR_PRODUCTO = (darProducto -> MAQUINA).
 
+/* ========================================================================== */
+/*  Ejercicio 8                                                               */
+/* ========================================================================== */
+
+const MIN_FREQ = 88
+const MAX_FREQ = 108
+
+RADIO = OFF,
+
+OFF = (on -> READY),
+
+READY = (scan -> ON[MAX_FREQ]),
+
+ON[f:MIN_FREQ..MAX_FREQ] = (
+      off     -> OFF
+    | reset   -> READY
+    | found   -> READY
+    | when (f > MIN_FREQ) to[f-1] -> ON[f-1]
+).
