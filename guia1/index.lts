@@ -198,11 +198,14 @@ WEST = (enableWest -> WEST).
 ||MUSEUM = (DIRECTOR || CONTROL || EAST || WEST).
 
 /* . . Alternativa  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
+
 set Dors = {{east,west}.enable , {east,west}.disable}
+
 DIRECTOR = (openMuseum  -> closeMuseum -> DIRECTOR).
 CONTROL = (
     openMuseum  -> east.enable -> west.enable -> CONTROL
   | closeMuseum -> east.disable -> CONTROL
 ) + Dors.
 DOOR = (enable -> DOOR | disable -> DOOR).
+
 ||MUSEUM = (DIRECTOR || CONTROL || east:DOOR || west:DOOR).
