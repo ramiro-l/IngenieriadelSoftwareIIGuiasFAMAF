@@ -140,7 +140,8 @@ MAQUINA = MAQUINA[0],
 MAQUINA[d:RANGO_DINERO] = (
       when (d == PRECIO_PRODUCTO) entregar_producto -> MAQUINA
         
-    | when (d > PRECIO_PRODUCTO) dar_vuelto[d - PRECIO_PRODUCTO] -> MAQUINA[PRECIO_PRODUCTO]
+    | when (d > PRECIO_PRODUCTO) 
+                    dar_vuelto[d - PRECIO_PRODUCTO] -> MAQUINA[PRECIO_PRODUCTO]
         
     | when (d < PRECIO_PRODUCTO) c[5]  -> MAQUINA[d + 5]
     | when (d < PRECIO_PRODUCTO) c[10] -> MAQUINA[d + 10]
