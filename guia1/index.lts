@@ -202,7 +202,7 @@ Por lo tanto S1 y S2 tienen el mismo comportamiento.
 /* ========================================================================== */
 /*  Ejercicio 10                                                              */
 /* ========================================================================== */
-/* TODO: REVISAR */
+/* . . Alternativa 1  . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
 
 DIRECTOR = (
     openMuseum  -> closeMuseum -> DIRECTOR
@@ -215,7 +215,7 @@ EAST = (enableEast -> EAST | disableEast -> EAST).
 WEST = (enableWest -> WEST).
 ||MUSEUM = (DIRECTOR || CONTROL || EAST || WEST).
 
-/* . . Alternativa  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
+/* . . Alternativa 2  . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
 
 set Dors = {{east,west}.enable , {east,west}.disable}
 
@@ -227,6 +227,31 @@ CONTROL = (
 DOOR = (enable -> DOOR | disable -> DOOR).
 
 ||MUSEUM = (DIRECTOR || CONTROL || east:DOOR || west:DOOR).
+
+/* . . Alternativa 3 (correcta) . . . . . . . . . . . . . . . . . . . . . . . */
+
+const MAX = 3
+
+DIRECTOR = (openMuseum -> closeMuseum -> DIRECTOR).
+
+CONTROL = CLOSED,
+CLOSED = (openMuseum -> east.enable -> west.enable -> OPEN[0]),
+OPEN[people:0..MAX] = (
+    when(people < MAX) enter -> OPEN[people+1]
+  | when(people > 0)   exit  -> OPEN[people-1]
+  | closeMuseum -> east.disable -> WAITING[people]
+),
+WAITING[people:0..MAX] = (
+    when(people > 0)  exit         -> WAITING[people-1]
+  | when(people == 0) west.disable -> CLOSED
+).
+
+DOOR = DOOR_CLOSED,
+DOOR_CLOSED = (enable  -> DOOR_OPEN),
+DOOR_OPEN = (action  -> DOOR_OPEN | disable -> DOOR_CLOSED).
+
+||MUSEUM = ( DIRECTOR || CONTROL || east:DOOR || west:DOOR ) /
+           { enter/east.action, exit/west.action }.
 
 /* ========================================================================== */
 /*  Ejercicio 11                                                              */
