@@ -4,6 +4,7 @@
 
 ```text
 guia{n}/
+    guia{n}.pdf
 	index.lts
 	images/
 ```
