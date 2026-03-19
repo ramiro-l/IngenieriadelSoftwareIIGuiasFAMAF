@@ -2,7 +2,40 @@
 /*  Ejercicio 1                                                               */
 /* ========================================================================== */
 
-/* ========================================================================== */
+/* . . Alternativa 1  . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
+const N_PROCESOS = 2
+const N_LECTORES = 2
+const N_ESCRITORES = 3
+
+SYSTEM = SYSTEM[0][0][0],
+SYSTEM[p:0..N_PROCESOS][l:0..N_LECTORES][e:0..N_ESCRITORES] = (
+      when (p < N_PROCESOS) agregarLector -> SYSTEM[p+1][l+1][e]
+    | when (p < N_PROCESOS) agregarEscritor -> SYSTEM[p+1][l][e+1]
+    | when (p > 0 && l > 0) quitarLector -> SYSTEM[p-1][l-1][e]
+    | when (p > 0 && e > 0) quitarEscritor -> SYSTEM[p-1][l][e-1]
+).
+
+/* . . Alternativa 2  . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
+const N_PROCESOS = 2
+const N_LECTORES = 3
+const N_ESCRITORES = 3
+
+LECTOR = (pedirLeer -> leer -> dejarLeer -> LECTOR).
+ESCRITOR = (pedirEscribir -> escribir -> dejarEscribir -> ESCRITOR).
+
+CONTROLADOR = CONTROLADOR[0][0][0],
+CONTROLADOR[p:0..N_PROCESOS][l:0..N_LECTORES][e:0..N_ESCRITORES] = (
+      when (p < N_PROCESOS) pedirLeer -> CONTROLADOR[p+1][l+1][e]
+    | when (p < N_PROCESOS) pedirEscribir -> CONTROLADOR[p+1][l][e+1]
+    | when (p > 0 && l > 0) dejarLeer -> CONTROLADOR[p-1][l-1][e]
+    | when (p > 0 && e > 0) dejarEscribir -> CONTROLADOR[p-1][l][e-1]
+).
+
+||SYSTEM = ( 
+    CONTROLADOR || [1..N_LECTORES]:LECTOR || [1..N_ESCRITORES]:ESCRITOR
+).
+
+./* ========================================================================== */
 /*  Ejercicio 2                                                               */
 /* ========================================================================== */
 
