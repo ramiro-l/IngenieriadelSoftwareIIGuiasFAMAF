@@ -285,10 +285,31 @@ TALADRO = (poner_en_taladro -> taladrar -> extraer_taladro -> TALADRO).
 BRAZO_SALIDA = ( extraer_prensa  -> salida_sistema -> BRAZO_SALIDA 
                 | extraer_taladro -> salida_sistema -> BRAZO_SALIDA ).
 
-||CELULA_12 = (CINTA || BRAZO_ENTRADA || PRENSA || TALADRO || BRAZO_SALIDA).
+||CELULA = (CINTA || BRAZO_ENTRADA || PRENSA || TALADRO || BRAZO_SALIDA).
 
 /* ========================================================================== */
 /*  Ejercicio 13                                                              */
 /* ========================================================================== */
+/* TODO: REVISAR */
 
-/* ... */
+set OBJ = {a,b,c,d}
+set MAQUINAS = {prensa, taladro}
+CINTA = ( llegada[n:OBJ] -> parar_cinta -> quitar[n] -> CINTA ).
+
+BRAZO_ENTRADA = ( quitar[n:OBJ] -> poner[m:MAQUINAS][n] -> BRAZO_ENTRADA ).
+
+PRENSA  = ( poner.prensa[n:OBJ]  -> prensar  -> extraer.prensa[n] -> PRENSA ).
+TALADRO = ( poner.taladro[n:OBJ] -> taladrar -> extraer.taladro[n] -> TALADRO ).
+
+BRAZO_INTERNO = ( extraer[m1:MAQUINAS][n:OBJ] -> poner[m2:MAQUINAS][n] -> BRAZO_INTERNO ).
+
+BRAZO_SALIDA = ( extraer[m:MAQUINAS][n:OBJ]  -> salida_sistema -> BRAZO_SALIDA ).
+
+CONTROLADOR = (
+    quitar.a -> poner.prensa.a -> extraer.prensa.a -> salida_sistema -> CONTROLADOR
+  | quitar.b -> poner.taladro.b -> extraer.taladro.b -> salida_sistema -> CONTROLADOR
+  | quitar.c -> poner.prensa.c -> extraer.prensa.c -> poner.taladro.c -> extraer.taladro.c -> salida_sistema -> CONTROLADOR
+  | quitar.d -> poner.taladro.d -> extraer.taladro.d -> poner.prensa.d -> extraer.prensa.d -> salida_sistema -> CONTROLADOR
+).
+
+||CELULA = (CINTA || BRAZO_ENTRADA || PRENSA || TALADRO || BRAZO_INTERNO || BRAZO_SALIDA || CONTROLADOR).
