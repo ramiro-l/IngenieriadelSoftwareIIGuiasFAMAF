@@ -23,5 +23,5 @@ sudo apt install default-jre unzip
 wget https://www.doc.ic.ac.uk/~jnm/book/ltsa/ltsatool.zip
 unzip ltsatool.zip
 cd ltsatool
-java -jar ltsa.jar
+java -Dswing.defaultlaf=javax.swing.plaf.metal.MetalLookAndFeel -Dswing.systemlaf=javax.swing.plaf.metal.MetalLookAndFeel -jar ltsa.jar
 ```
