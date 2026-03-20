@@ -1,5 +1,5 @@
 /* ========================================================================== */
-/*  Ejercicio 1                                                               */
+/*  Ejercicio 2                                                               */
 /* ========================================================================== */
 
 /* . . Alternativa 1  . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
@@ -25,19 +25,19 @@ ESCRITOR = (pedirEscribir -> escribir -> dejarEscribir -> ESCRITOR).
 
 CONTROLADOR = CONTROLADOR[0][0][0],
 CONTROLADOR[p:0..N_PROCESOS][l:0..N_LECTORES][e:0..N_ESCRITORES] = (
-      when (p < N_PROCESOS && l < N_LECTORES) [1..N_LECTORES].pedirLeer -> CONTROLADOR[p+1][l+1][e]
-    | when (p < N_PROCESOS && e < N_ESCRITORES) [1..N_ESCRITORES].pedirEscribir -> CONTROLADOR[p+1][l][e+1]
-    | when (p > 0 && l > 0) [1..N_LECTORES].dejarLeer -> CONTROLADOR[p-1][l-1][e]
-    | when (p > 0 && e > 0) [1..N_ESCRITORES].dejarEscribir -> CONTROLADOR[p-1][l][e-1]
+      when (p < N_PROCESOS && l < N_LECTORES) 
+            [1..N_LECTORES].pedirLeer -> CONTROLADOR[p+1][l+1][e]
+    | when (p < N_PROCESOS && e < N_ESCRITORES) 
+            [1..N_ESCRITORES].pedirEscribir -> CONTROLADOR[p+1][l][e+1]
+    | when (p > 0 && l > 0)
+            [1..N_LECTORES].dejarLeer -> CONTROLADOR[p-1][l-1][e]
+    | when (p > 0 && e > 0)
+            [1..N_ESCRITORES].dejarEscribir -> CONTROLADOR[p-1][l][e-1]
 ).
 
 ||SYSTEM = ( 
     CONTROLADOR || [1..N_LECTORES]:LECTOR || [1..N_ESCRITORES]:ESCRITOR
 ).
-
-./* ========================================================================== */
-/*  Ejercicio 2                                                               */
-/* ========================================================================== */
 
 /* ========================================================================== */
 /*  Ejercicio 3                                                               */
