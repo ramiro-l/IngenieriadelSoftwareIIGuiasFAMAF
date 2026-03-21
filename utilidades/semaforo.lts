@@ -1,0 +1,32 @@
+/*******************************************************************************
+EJEMPLO DE SEMÁFORO
+
+Este sistema esta modelando un semáforo que permite que hasta N procesos puedan 
+acceder a un recurso compartido. 
+
+Ademas permite que si ningún proceso esta accediendo al recurso, un proceso 
+pueda adquirir el semáforo y nadie mas pueda acceder al recurso hasta que el
+proceso que adquirió el semáforo lo libere.
+
+*******************************************************************************/
+
+SEMAPHORE (N=2) = SEMAPHORE[N],
+SEMAPHORE[v:0..N] = (
+      up -> SEMAPHORE[v+1]
+    | when(v > 0)  down    -> SEMAPHORE[v-1]
+    | when(v == N) acquire -> release -> SEMAPHORE[N] ),
+SEMAPHORE[N+1] = ERROR.
+
+PROCESS = (
+      down -> action.a -> up -> PROCESS
+    | acquire -> action.b -> release -> PROCESS
+).
+
+||SYSTEM (CANT_PROCESS=3) = ( 
+     { process[1..CANT_PROCESS] }:PROCESS || SEMAPHORE 
+) / { 
+{ process[1..CANT_PROCESS] }.down / down,
+{ process[1..CANT_PROCESS] }.up / up,
+{ process[1..CANT_PROCESS] }.acquire / acquire,
+{ process[1..CANT_PROCESS] }.release / release
+}.
