@@ -1,0 +1,118 @@
+/*******************************************************************************
+                       MODELADO DEL PARQUE - CON ERRORES
+*******************************************************************************/
+
+const N = 4
+range T = 0..N
+set VarAlpha = { value.{ read[T], write[T] } }
+
+VAR = VAR[0],
+VAR[u:T] = (
+      read[u] ->VAR[u]
+    | write[v:T]->VAR[v] ).
+
+TURNSTILE = ( go -> RUN ),
+RUN = ( arrive -> INCREMENT | end -> TURNSTILE ),
+INCREMENT = ( value.read[x:T] -> value.write[x+1] -> RUN ) + VarAlpha.
+
+||GARDEN = (
+    east:TURNSTILE || west:TURNSTILE || 
+    {east,west,display}::value:VAR )
+     / { go/{ east, west }.go,
+         end/{ east, west }.end }.
+
+/*
+Lo que sucede es que la puerta east pueden ambos leer el mismo valor, y luego 
+ambos escribir el mismo valor incrementado, lo que hace que el contador no se 
+incremente correctamente.
+*/
+
+/*******************************************************************************
+                  MODELADO DEL PARQUE - CON ERRORES Y UN TESTER
+*******************************************************************************/
+
+/* 
+Si corres esto y le poner que te marque los errores, falla con el test.
+El test lo que hace es cada vez que llega alguien, incrementa el contador y
+al terminar verifica que lo contado coincida con el valor de la variable.
+*/
+         
+const N = 4
+range T = 0..N
+set VarAlpha = { value.{ read[T], write[T] } }
+
+VAR = VAR[0],
+VAR[u:T] = (
+      read[u] ->VAR[u]
+    | write[v:T]->VAR[v] ).
+
+TURNSTILE = ( go -> RUN ),
+RUN = ( arrive -> INCREMENT | end -> TURNSTILE ),
+INCREMENT = ( value.read[x:T] -> value.write[x+1] -> RUN ) + VarAlpha.
+
+TEST = TEST[0],
+TEST[v:T] = (
+      when (v<N) { east.arrive, west.arrive } -> TEST[v+1]
+    | end -> CHECK[v] ),
+CHECK[v:T] = (
+    display.value.read[u:T] -> 
+        (
+              when (u==v) right -> TEST[v]
+            | when (u!=v) wrong[u][v] -> ERROR
+        )
+) + { display.VarAlpha }.
+
+||GARDEN = (
+    east:TURNSTILE || west:TURNSTILE || 
+    {east,west,display}::value:VAR 
+    || TEST) / { go/{ east, west }.go,
+                end/{ east, west }.end }.
+
+/*******************************************************************************
+                           MODELADO DEL PARQUE - SOLUCIÓN
+*******************************************************************************/
+
+/*
+La idea es que la variable ahora es un recurso que se adquiere para leer 
+o escribir y se libera luego de hacerlo. De esta forma, no pueden haber dos 
+procesos leyendo o escribiendo al mismo tiempo.
+*/
+  
+const N = 4
+range T = 0..N
+set VarAlpha = { value.{ read[T], write[T], acquire, release } }
+
+VAR = VAR[0],
+VAR[u:T] = (
+      read[u] ->VAR[u]
+    | write[v:T]->VAR[v] ).
+
+LOCK = ( acquire -> release -> LOCK).
+
+||LOCK_VAR = (LOCK || VAR).
+
+TURNSTILE = (go -> RUN),
+RUN = (arrive -> INCREMENT | end -> TURNSTILE),
+INCREMENT = (
+   value.acquire -> 
+   value.read[x:T] -> value.write[x+1] -> 
+   value.release -> RUN
+) + VarAlpha.
+
+TEST = TEST[0],
+TEST[v:T] = (
+      when (v<N) { east.arrive, west.arrive } -> TEST[v+1]
+    | end -> CHECK[v] ),
+CHECK[v:T] = (
+    display.value.read[u:T] -> 
+        (
+              when (u==v) right -> TEST[v]
+            | when (u!=v) wrong[u][v] -> ERROR
+        )
+) + { display.VarAlpha }.
+
+||GARDEN = (
+    east:TURNSTILE || west:TURNSTILE || 
+    {east,west,display}::value:LOCK_VAR 
+    || TEST) / { go/{ east, west }.go,
+                end/{ east, west }.end }.
