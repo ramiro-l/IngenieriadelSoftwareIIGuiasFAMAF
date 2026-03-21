@@ -82,6 +82,22 @@ CONSULTAR[a:ASIENTOS] = (
 /*  Ejercicio 4                                                               */
 /* ========================================================================== */
 
+const N_PORCIONES = 2
+const N_SALVAJES = 4
+range SALVAJES = 1..N_SALVAJES
+
+SALVAJE = ( servirse -> comer -> SALVAJE ).
+
+COCINERO = ( agregarComida -> COCINERO ).
+
+OLLA = OLLA[N_PORCIONES],
+OLLA[n:0..N_PORCIONES] = (
+          when (n > 0)  salvaje[SALVAJES].servirse -> OLLA[n-1]
+        | when (n == 0) cocinero.agregarComida     -> OLLA[N_PORCIONES]
+).
+
+||TRIBU = ( {salvaje[SALVAJES]}:SALVAJE || cocinero::COCINERO || OLLA ).
+
 /* ========================================================================== */
 /*  Ejercicio 5                                                               */
 /* ========================================================================== */
