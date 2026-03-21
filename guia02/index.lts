@@ -168,7 +168,40 @@ BUFFER[n:0..TAM_BUFFER] = (
 /* ========================================================================== */
 /*  Ejercicio 9                                                               */
 /* ========================================================================== */
+/* TODO: REVISAR */
 
+const N_CLIENTES = 3
+range CLIENTES = 1..N_CLIENTES
+
+CLIENTE = (
+    comprar.libro -> ( vender.libro -> CLIENTE | rechazar.compra -> CLIENTE )
+).
+
+EDITORIAL = ( 
+    check.libro -> ( con.libro -> EDITORIAL | sin.libro -> EDITORIAL )
+).
+
+TARJETA = ( 
+    consultar.saldo -> ( con.saldo -> TARJETA | sin.saldo -> TARJETA )
+).
+
+EMPRESA = (
+    cliente[c:CLIENTES].comprar.libro -> check.libro -> (
+          con.libro -> consultar.saldo -> (
+                  con.saldo -> cliente[c].vender.libro -> EMPRESA 
+                | sin.saldo -> cliente[c].rechazar.compra -> EMPRESA
+          )
+        | sin.libro -> cliente[c].rechazar.compra -> EMPRESA
+    )
+).
+
+||SISTEMA = (
+    { cliente[CLIENTES] }:CLIENTE || 
+    EDITORIAL || 
+    TARJETA ||
+    EMPRESA
+).
+ 
 /* ========================================================================== */
 /*  Ejercicio 10                                                              */
 /* ========================================================================== */
