@@ -1,5 +1,17 @@
+/*******************************************************************************
+EJEMPLO DE VARIABLE COMPARTIDA
+
+Es un ejemplo sencillo, pero que muestra como sincronizar el acceso a una
+variable compartida.
+
+Toda la sincronización se hace porque si vemos `SYSTEM`, tiene una sola
+variable `VAR`. Lo que hace `{a,b}::` es prefijar a todas las acciones de `VAR` 
+con `a` y `b`. Esto genera que si la persona "a" escribe 1, entonces la variable
+pasa a tener el valor 1, y si la persona "b" lee el valor de la variable,
+entonces "b" va a leer el valor 1.
+*******************************************************************************/
+
 range T = 0..4
-set VarAlpha = { read[T], write[T] }
 
 VAR = VAR[0],
 VAR[u:T] = (
@@ -8,6 +20,6 @@ VAR[u:T] = (
 
 PERSON = ( 
       read[T]  -> PERSON
-    | write[T] -> PERSON ) + VarAlpha.
+    | write[T] -> PERSON ).
 
 ||SYSTEM = ( {a,b}:PERSON  || {a,b}::VAR ).
