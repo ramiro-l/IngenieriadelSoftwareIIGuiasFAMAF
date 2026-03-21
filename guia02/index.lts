@@ -48,6 +48,34 @@ CONTROLADOR[p:0..N_PROCESOS][l:0..N_LECTORES][e:0..N_ESCRITORES] = (
 /*  Ejercicio 3                                                               */
 /* ========================================================================== */
 
+const N_ASIENTOS = 3
+const N_CENTRALES = 2
+
+range BOOL = 0..1
+range ASIENTOS = 1..N_ASIENTOS
+range CENTRALES = 1..N_CENTRALES
+
+ASIENTO = ASIENTO[0],
+ASIENTO[v:BOOL] = (
+      when ( v == 0 ) reservar -> ASIENTO[1]
+    | when ( v == 1 ) ocupado -> ASIENTO[v] 
+).
+LOCK = ( adquirirLock -> liberarLock -> LOCK).
+||LOCK_ASIENTO = (LOCK || ASIENTO).
+
+CENTRAL = (
+    consultar[a:ASIENTOS] -> asiento[a].adquirirLock -> CONSULTAR[a]
+),
+CONSULTAR[a:ASIENTOS] = (
+      asiento[a].reservar -> asiento[a].liberarLock -> CENTRAL
+    | asiento[a].ocupado -> asiento[a].liberarLock -> CENTRAL
+).
+
+||SISTEMA = (
+    { central[CENTRALES] }:CENTRAL || 
+    { central[CENTRALES] }::{ asiento[ASIENTOS] }:LOCK_ASIENTO
+).
+
 /* ========================================================================== */
 /*  Ejercicio 4                                                               */
 /* ========================================================================== */
