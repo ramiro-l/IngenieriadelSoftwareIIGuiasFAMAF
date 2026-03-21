@@ -4,9 +4,16 @@
 
 ```text
 guia{n}/
+    """ Cada guía tiene el enunciado (pdf), mi solución (lts) y a veces imágenes. """
     guia{n}.pdf
 	index.lts
 	images/
+utilidades/
+    """ Algunos ejemplo que son útiles para resolver los ejercicios. """
+    *.lts
+teórico/
+    """ Algunos ejemplo que se dieron en el teórico. """
+    *.lts
 ```
 
 ## LTSA
