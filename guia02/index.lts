@@ -134,6 +134,24 @@ OLLA[n:0..N_PORCIONES] = (
 /* ========================================================================== */
 /*  Ejercicio 5                                                               */
 /* ========================================================================== */
+/* TODO: REVISAR */
+
+const TAM_BUFFER = 4
+
+PRODUCTOR =  ( producir -> PRODUCTOR  ).
+CONSUMIDOR = ( consumir -> CONSUMIDOR ).
+
+BUFFER = BUFFER[0],
+BUFFER[n:0..TAM_BUFFER] = (
+      when (n < TAM_BUFFER)  productor.producir -> BUFFER[n+1]
+    | when (n > 0)           consumidor.consumir -> BUFFER[n-1]
+).
+
+||SISTEMA = ( 
+    productor:PRODUCTOR || 
+    consumidor:CONSUMIDOR || 
+    BUFFER
+).
 
 /* ========================================================================== */
 /*  Ejercicio 6                                                               */
