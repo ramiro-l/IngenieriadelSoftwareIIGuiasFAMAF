@@ -25,28 +25,13 @@ PERSON = (
 /*  Ejercicio 4                                                               */
 /* ========================================================================== */
 
-/* TODO: Cual esta bien? */
-
-/* ---- OPCIÓN 1 ------------------------------------------------------------ */
 const N = 2
 range R = 0..N
 
 VARIABLE = VARIABLE[0],
-
 VARIABLE[v:R] = (
-      write[x:R] -> VARIABLE[x]
-    | read[v]    -> VARIABLE[v]
-).
-
-/* ---- OPCIÓN 2 ------------------------------------------------------------ */
-const N = 2
-range R = 0..N
-
-VARIABLE = VARIABLE[0],
-
-VARIABLE[v:R] = (
-      write[x:R] -> VARIABLE[x]
-    | read[y:R] -> VARIABLE[y]
+      read[v] -> VARIABLE[v]
+    | write[x:R] -> VARIABLE[x]
 ).
 
 /* ========================================================================== */
