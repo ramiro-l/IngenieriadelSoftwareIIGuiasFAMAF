@@ -1,6 +1,7 @@
 /* ========================================================================== */
 /*  Ejercicio 2                                                               */
 /* ========================================================================== */
+
 /* . . Alternativa 1  . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
 const N_PROCESOS = 2
 const N_LECTORES = 2
@@ -43,6 +44,8 @@ CONTROLADOR[p:0..N_PROCESOS][l:0..N_LECTORES][e:0..N_ESCRITORES] = (
     escritor[1..N_ESCRITORES]:ESCRITOR ||
     {lector[1..N_LECTORES],escritor[1..N_ESCRITORES]}::valor:VAR
 ).
+
+// NOTA: Esto también se puede modelar con un semáforo.
 
 /* ========================================================================== */
 /*  Ejercicio 3                                                               */
