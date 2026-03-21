@@ -45,7 +45,7 @@ CONTROLADOR[p:0..N_PROCESOS][l:0..N_LECTORES][e:0..N_ESCRITORES] = (
     {lector[1..N_LECTORES],escritor[1..N_ESCRITORES]}::valor:VAR
 ).
 
-/* . . Alternativa 3 (con semáforo)  . . . . . . . . . . . . . . . . . . . .  */
+/* . . Alternativa 2 (con semáforo)  . . . . . . . . . . . . . . . . . . . .  */
 
 const N_PROCESS = 2
 const N_READERS = 2
