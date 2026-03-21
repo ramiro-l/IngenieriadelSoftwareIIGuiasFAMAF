@@ -166,33 +166,6 @@ Por lo tanto S1 y S2 tienen el mismo comportamiento.
 /* ========================================================================== */
 /*  Ejercicio 10                                                              */
 /* ========================================================================== */
-/* . . Alternativa 1  . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
-
-DIRECTOR = (
-    openMuseum  -> closeMuseum -> DIRECTOR
-).
-CONTROL = (
-    openMuseum  -> enableEast -> enableWest -> CONTROL
-  | closeMuseum -> disableEast -> CONTROL
-).
-EAST = (enableEast -> EAST | disableEast -> EAST).
-WEST = (enableWest -> WEST).
-||MUSEUM = (DIRECTOR || CONTROL || EAST || WEST).
-
-/* . . Alternativa 2  . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
-
-set Dors = {{east,west}.enable , {east,west}.disable}
-
-DIRECTOR = (openMuseum  -> closeMuseum -> DIRECTOR).
-CONTROL = (
-    openMuseum  -> east.enable -> west.enable -> CONTROL
-  | closeMuseum -> east.disable -> CONTROL
-) + Dors.
-DOOR = (enable -> DOOR | disable -> DOOR).
-
-||MUSEUM = (DIRECTOR || CONTROL || east:DOOR || west:DOOR).
-
-/* . . Alternativa 3 (correcta) . . . . . . . . . . . . . . . . . . . . . . . */
 
 const MAX = 3
 
