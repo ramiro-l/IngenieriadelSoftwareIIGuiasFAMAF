@@ -45,7 +45,37 @@ CONTROLADOR[p:0..N_PROCESOS][l:0..N_LECTORES][e:0..N_ESCRITORES] = (
     {lector[1..N_LECTORES],escritor[1..N_ESCRITORES]}::valor:VAR
 ).
 
-// NOTA: Esto también se puede modelar con un semáforo.
+/* . . Alternativa 3 (con semáforo)  . . . . . . . . . . . . . . . . . . . .  */
+
+const N_PROCESS = 2
+const N_READERS = 2
+const N_WRITERS = 2
+
+range VAR_VALUES = 0..2
+
+VAR = VAR[0],
+VAR[v:VAR_VALUES] = (
+      read[v] -> VAR[v]
+    | write[new_value:VAR_VALUES] -> VAR[new_value] ).
+
+SEMAPHORE (N=N_PROCESS) = SEMAPHORE[N],
+SEMAPHORE[v:0..N] = (
+      up -> SEMAPHORE[v+1]
+    | when(v > 0)  down    -> SEMAPHORE[v-1]
+    | when(v == N) acquire -> release -> SEMAPHORE[N] ),
+SEMAPHORE[N+1] = ERROR. // Esto sucede si alguien hace up sin antes hacer down.
+
+READER = ( down -> read[VAR_VALUES] -> up -> READER ).
+WRITER = ( 
+      down -> read[VAR_VALUES] -> up -> WRITER
+    | acquire -> write[VAR_VALUES] -> release -> WRITER 
+).
+
+||SYSTEM = ( 
+    reader[1..N_READERS]:READER || writer[1..N_WRITERS]:WRITER ||
+    {reader[1..N_READERS], writer[1..N_WRITERS]}::VAR || 
+    {reader[1..N_READERS], writer[1..N_WRITERS]}::SEMAPHORE
+).
 
 /* ========================================================================== */
 /*  Ejercicio 3                                                               */
