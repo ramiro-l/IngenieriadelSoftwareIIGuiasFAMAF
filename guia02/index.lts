@@ -44,56 +44,6 @@ CONTROLADOR[p:0..N_PROCESOS][l:0..N_LECTORES][e:0..N_ESCRITORES] = (
     {lector[1..N_LECTORES],escritor[1..N_ESCRITORES]}::valor:VAR
 ).
 
-/* . . Alternativa 2  . . . . . . . . . . . . . . . . . . . . . . . . . . . . */
-const N_PROCESOS = 2
-const N_LECTORES = 2
-const N_ESCRITORES = 2
-
-const MAX_VALOR_VAR = 2
-range VALORES_VAR = 0..MAX_VALOR_VAR
-set VarAlpha = { valor.{ leer[VALORES_VAR], 
-                         escribir[VALORES_VAR], 
-                         adquirir, liberar } }
-
-VAR = VAR[0],
-VAR[v:VALORES_VAR] = (
-      leer[v] -> VAR[v]
-    | escribir[nv:VALORES_VAR] -> VAR[nv] ).
-LOCK = ( adquirir -> liberar -> LOCK ).
-||LOCK_VAR = ( VAR || LOCK ).
-
-LECTOR = ( 
-    pedirLeer ->
-    valor.leer[VALORES_VAR] ->
-    terminarLeer -> LECTOR ) + VarAlpha.
-ESCRITOR = ( 
-    pedirEscribir ->
-    valor.adquirir -> 
-    valor.leer[VALORES_VAR] ->
-    valor.escribir[VALORES_VAR] -> 
-    valor.liberar ->
-    terminarEscribir -> ESCRITOR ) + VarAlpha.
-
-CONTROLADOR = CONTROLADOR[0][0][0],
-CONTROLADOR[p:0..N_PROCESOS][l:0..N_LECTORES][e:0..N_ESCRITORES] = (
-      when (p < N_PROCESOS && l < N_LECTORES) 
-        lector[1..N_LECTORES].pedirLeer -> CONTROLADOR[p+1][l+1][e]
-    | when (p < N_PROCESOS && e < N_ESCRITORES && l == 0) 
-        escritor[1..N_ESCRITORES].pedirEscribir -> CONTROLADOR[p+1][l][e+1]
-    | when (p > 0 && l > 0) 
-        lector[1..N_LECTORES].terminarLeer -> CONTROLADOR[p-1][l-1][e]
-    | when (p > 0 && e > 0) 
-        escritor[1..N_ESCRITORES].terminarEscribir -> CONTROLADOR[p-1][l][e-1]
-).
-
-||SYSTEM = ( 
-    CONTROLADOR ||
-    lector[1..N_LECTORES]:LECTOR ||
-    escritor[1..N_ESCRITORES]:ESCRITOR ||
-    {lector[1..N_LECTORES],escritor[1..N_ESCRITORES]}::valor:LOCK_VAR
-).
-
-
 /* ========================================================================== */
 /*  Ejercicio 3                                                               */
 /* ========================================================================== */
