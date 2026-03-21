@@ -1,0 +1,13 @@
+range T = 0..4
+set VarAlpha = { read[T], write[T] }
+
+VAR = VAR[0],
+VAR[u:T] = (
+      read[u] -> VAR[u]
+    | write[v:T] -> VAR[v] ).
+
+PERSON = ( 
+      read[T]  -> PERSON
+    | write[T] -> PERSON ) + VarAlpha.
+
+||SYSTEM = ( {a,b}:PERSON  || {a,b}::VAR ).
