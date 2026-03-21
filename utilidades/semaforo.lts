@@ -15,7 +15,7 @@ SEMAPHORE[v:0..N] = (
       up -> SEMAPHORE[v+1]
     | when(v > 0)  down    -> SEMAPHORE[v-1]
     | when(v == N) acquire -> release -> SEMAPHORE[N] ),
-SEMAPHORE[N+1] = ERROR.
+SEMAPHORE[N+1] = ERROR. // Esto sucede si alguien hace up sin antes hacer down.
 
 PROCESS = (
       down -> action.a -> up -> PROCESS
