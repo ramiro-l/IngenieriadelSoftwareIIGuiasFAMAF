@@ -38,30 +38,9 @@ VARIABLE[v:R] = (
 /*  Ejercicio 5 (flip-flop)                                                   */
 /* ========================================================================== */
 
-/* TODO: Cual esta bien? */
-
-/* ---- OPCIÓN 1 ------------------------------------------------------------ */
-range R = 0..1
-
-BISTABLE = BISTABLE[0],
-BISTABLE[v:R] = (trigger -> BISTABLE[1-v]).
-
-/* . . Alternativamente . . . . . . . . . . . . . . . . . . . . . . . . . . . */
-range R = 0..1
-
-BISTABLE = BISTABLE[0],
-BISTABLE[0] = (trigger -> BISTABLE[1]),
-BISTABLE[1] = (trigger -> BISTABLE[0]).
-
-
-BISTABLE = BISTABLE0,
-BISTABLE0 = (trigger -> out.1 -> BISTABLE1),
-BISTABLE1 = (trigger -> out.0 -> BISTABLE0).
-
-/* ---- OPCIÓN 2 ------------------------------------------------------------ */
-BISTABLE = FLIP,
-FLIP = (trigger -> zero -> FLOP),
-FLOP = (trigger -> one  -> FLIP).
+BISTABLE = ONE,
+ONE =  (trigger -> [1] -> ZERO),
+ZERO = (trigger -> [0] -> ONE ).
 
 /* ========================================================================== */
 /*  Ejercicio 6                                                               */
