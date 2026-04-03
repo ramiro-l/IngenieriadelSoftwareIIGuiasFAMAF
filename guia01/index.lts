@@ -193,40 +193,59 @@ DOOR_OPEN = (action  -> DOOR_OPEN | disable -> DOOR_CLOSED).
 /* ========================================================================== */
 /*  Ejercicio 11                                                              */
 /* ========================================================================== */
-/* TODO: REVISAR */
 
-CINTA = (llegada_A -> parar_cinta -> quitar_A -> CINTA).
+const LARGO_CINTA = 3
+set Objetos = { objA }
 
-BRAZO_ENTRADA = (quitar_A -> poner_en_prensa -> BRAZO_ENTRADA).
+ONE_BUFF = (poner[x:Objetos] -> quitar[x] -> ONE_BUFF).
+
+||CINTA(N=LARGO_CINTA) = ( [1..N]:ONE_BUFF ) / {
+    poner/[1].poner,  [i:2..N].poner/[i-1].quitar, quitar/[N].quitar
+}@{ poner, quitar}.
+
+BRAZO_ENTRADA = (quitar.objA -> poner_en_prensa -> BRAZO_ENTRADA).
 
 PRENSA = (poner_en_prensa -> prensar -> listo_para_extraer -> PRENSA).
 
-BRAZO_SALIDA = (listo_para_extraer -> sacar_de_prensa -> salida_sistema -> BRAZO_SALIDA).
+BRAZO_SALIDA = (
+    listo_para_extraer -> sacar_de_prensa -> salida_sistema -> BRAZO_SALIDA
+).
 
 ||CELULA = (CINTA || BRAZO_ENTRADA || PRENSA || BRAZO_SALIDA).
 
 /* ========================================================================== */
 /*  Ejercicio 12                                                              */
 /* ========================================================================== */
-/* TODO: REVISAR */
 
-CINTA = ( llegada_A -> parar_cinta -> quitar_A -> CINTA 
-        | llegada_B -> parar_cinta -> quitar_B -> CINTA ).
+const LARGO_CINTA = 3
+set Objetos = { objA, objB }
 
-BRAZO_ENTRADA = ( quitar_A -> poner_en_prensa -> BRAZO_ENTRADA 
-                | quitar_B -> poner_en_taladro -> BRAZO_ENTRADA ).
+ONE_BUFF = (poner[x:Objetos] -> quitar[x] -> ONE_BUFF).
 
-PRENSA  = (poner_en_prensa  -> prensar  -> extraer_prensa -> PRENSA).
-TALADRO = (poner_en_taladro -> taladrar -> extraer_taladro -> TALADRO).
+||CINTA(N=LARGO_CINTA) = ( [1..N]:ONE_BUFF ) / {
+    poner/[1].poner,  [i:2..N].poner/[i-1].quitar, quitar/[N].quitar
+}@{ poner, quitar}.
 
-BRAZO_SALIDA = ( extraer_prensa  -> salida_sistema -> BRAZO_SALIDA 
-                | extraer_taladro -> salida_sistema -> BRAZO_SALIDA ).
+BRAZO_ENTRADA = ( quitar.objA -> poner_en_prensa.objA -> BRAZO_ENTRADA 
+                | quitar.objB -> poner_en_taladro.objB -> BRAZO_ENTRADA ).
+
+PRENSA  = (
+    poner_en_prensa.objA  -> prensar.objA  -> extraer_prensa.objA -> PRENSA
+).
+TALADRO = (
+    poner_en_taladro.objB -> taladrar.objB -> extraer_taladro.objB -> TALADRO
+).
+
+BRAZO_SALIDA = ( extraer_prensa.objA  -> salida_sistema.objA -> BRAZO_SALIDA 
+                | extraer_taladro.objB -> salida_sistema.objB -> BRAZO_SALIDA ).
 
 ||CELULA = (CINTA || BRAZO_ENTRADA || PRENSA || TALADRO || BRAZO_SALIDA).
 
 /* ========================================================================== */
 /*  Ejercicio 13                                                              */
 /* ========================================================================== */
+/* TODO: REVISAR */
+
 set OBJ = { a, b, c, d }
 
 CINTA = ( 
