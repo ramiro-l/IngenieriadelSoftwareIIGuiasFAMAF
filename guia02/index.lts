@@ -129,29 +129,26 @@ OLLA[n:0..N_PORCIONES] = (
         | when (n == 0) cocinero.agregarComida     -> OLLA[N_PORCIONES]
 ).
 
-||TRIBU = ( {salvaje[SALVAJES]}:SALVAJE || cocinero::COCINERO || OLLA ).
+||TRIBU = ( salvaje[SALVAJES]:SALVAJE || cocinero::COCINERO || OLLA ).
 
 /* ========================================================================== */
 /*  Ejercicio 5                                                               */
 /* ========================================================================== */
-/* TODO: REVISAR */
 
-const TAM_BUFFER = 4
+const TAM_BUFFER = 3
+set Mensajes = { a, b, c, d }
 
-PRODUCTOR =  ( producir -> PRODUCTOR  ).
-CONSUMIDOR = ( consumir -> CONSUMIDOR ).
+PRODUCTOR =  ( producir[Mensajes] -> PRODUCTOR  ).
+CONSUMIDOR = ( consumir[Mensajes] -> CONSUMIDOR ).
 
-BUFFER = BUFFER[0],
-BUFFER[n:0..TAM_BUFFER] = (
-      when (n < TAM_BUFFER)  productor.producir -> BUFFER[n+1]
-    | when (n > 0)           consumidor.consumir -> BUFFER[n-1]
-).
+ONE_BUFF = (put[x:Mensajes] -> get[x] -> ONE_BUFF).
+||BUFFER(N=TAM_BUFFER) = ( [1..N]:ONE_BUFF ) / {
+    [i:2..N].put/[i-1].get, // Sincronización entre BUFFERS.
+    producir/[1].put,
+    consumir/[N].get
+} @ { producir, consumir }.
 
-||SISTEMA = ( 
-    productor:PRODUCTOR || 
-    consumidor:CONSUMIDOR || 
-    BUFFER
-).
+||SISTEMA = ( PRODUCTOR || CONSUMIDOR || BUFFER ).
 
 /* ========================================================================== */
 /*  Ejercicio 6                                                               */
