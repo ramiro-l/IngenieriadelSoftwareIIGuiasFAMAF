@@ -154,6 +154,136 @@ ONE_BUFF = (put[x:Mensajes] -> get[x] -> ONE_BUFF).
 /*  Ejercicio 6                                                               */
 /* ========================================================================== */
 
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  //
+// Protocolo muy simple
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  //
+
+// Nota: Permite perdida de datos y nadie se entera.
+
+set D = { a, b }
+
+TRANSMISOR = (
+    fnl[d:D] -> tpl[d] -> TRANSMISOR
+    // recibe_dato_de_la_capa_de_red[d:D] -> 
+    // envía_dato_a_la_capa_física[d:D] -> TRANSMISOR
+).
+
+RECEPTOR = (
+    fpl[d:D] -> tnl[d] -> RECEPTOR
+    // recibe_dato_de_la_capa_física[d:D] -> 
+    // envía_dato_a_la_capa_de_red[d:D] -> RECEPTOR
+).
+
+// La idea es sincronizar tpl con fpl pero puede perderse.
+CANAL = (
+      transmisor.tpl[d:D] -> receptor.fpl[d] -> CANAL  // entrega correcta
+    | transmisor.tpl[d:D] -> CANAL                     // pierde el dato
+).
+
+||SISTEMA = (transmisor:TRANSMISOR || receptor:RECEPTOR || CANAL).
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  //
+// Protocolo "Stop and Wait"
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  //
+
+// Nota: Permite perdida de datos, pero el transmisor SI se entera 
+//       (porque nunca le llega el ACK) y no continúa.
+
+set D = { a, b }
+
+TRANSMISOR = (
+    fnl[d:D] -> tpl[d] -> fpl.ack -> TRANSMISOR
+    // recibe_dato_de_la_capa_de_red[d:D] -> 
+    // envía_dato_a_la_capa_física[d:D] -> 
+    // recibe_ack_de_la_capa_física.ack -> TRANSMISOR
+).
+
+RECEPTOR = (
+    fpl[d:D] -> tnl[d] -> tpl.ack -> RECEPTOR
+    // recibe_dato_de_la_capa_física[d:D] -> 
+    // envía_dato_a_la_capa_de_red[d:D] -> 
+    // envía_ack_a_la_capa_física.ack -> RECEPTOR
+).
+
+// La idea es sincronizar tpl con fpl y 
+// tnl.ack con fpl.ack pero ambos pueden perderse.
+CANAL = (
+      transmisor.tpl[d:D] -> receptor.fpl[d] -> CANAL  // entrega correcta
+    | transmisor.tpl[d:D] -> CANAL                     // pierde el dato
+    | receptor.tpl.ack -> transmisor.fpl.ack -> CANAL  // entrega correcta
+    | receptor.tpl.ack -> CANAL                        // pierde el ACK
+).
+
+||SISTEMA = (
+    transmisor:TRANSMISOR || receptor:RECEPTOR || CANAL
+).
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  //
+// Protocolo "PAR"
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  //
+
+set D = { a, b }
+range ACK = 0..1
+range SEQ = 0..1
+range NFTS = 0..1
+range FE = 0..1
+
+TRANSMISOR = TRANSMISOR[0],
+TRANSMISOR[nfts:NFTS] = (
+    fnl[d:D] -> TRANSMISOR_TIMER[d][nfts]
+),
+TRANSMISOR_TIMER[d:D][nfts:NFTS] = (
+     tpl[nfts][d] -> start_timer -> (
+          timeout -> TRANSMISOR_TIMER[d][nfts]
+        | fpl[ack:ACK] -> TRANSMISOR_ACK[d][ack][nfts]
+     )
+),
+TRANSMISOR_ACK[d:D][ack:ACK][nfts:NFTS] = (
+      when (ack == nfts && nfts == 0) handleAck -> TRANSMISOR[1] /*(nfts+1)*/ 
+    | when (ack == nfts && nfts == 1) handleAck -> TRANSMISOR[0] /*(nfts+1)*/ 
+    | when (ack != nfts) handleAck -> TRANSMISOR_TIMER[d][nfts]
+).
+
+RECEPTOR = RECEPTOR[0],
+RECEPTOR[fe:FE] = (
+    fpl[seq:SEQ][d:D] -> (
+          when (seq == fe && fe == 0) 
+            tnl[d] -> tpl[fe] /*((fe+1) - 1)*/ -> RECEPTOR[1] /*(fe+1)*/
+        | when (seq == fe && fe == 1) 
+            tnl[d] -> tpl[fe] /*((fe+1) - 1)*/ -> RECEPTOR[0] /*(fe+1)*/
+        | when (seq != fe && fe == 0) 
+            tpl[1] /*(fe-1)*/-> RECEPTOR[fe]
+        | when (seq != fe && fe == 1) 
+            tpl[0] /*(fe-1)*/-> RECEPTOR[fe]
+    )
+).
+
+CANAL = (
+      // El dato puede perderse y se activa el timeout del transmisor.
+      transmisor.tpl[nfts:NFTS][d:D] -> transmisor.start_timer -> 
+        receptor.fpl[nfts][d] -> CANAL
+    | transmisor.tpl[nfts:NFTS][d:D] -> transmisor.start_timer -> 
+        transmisor.timeout -> CANAL
+
+      // El ack puede perderse y se activa el timeout del transmisor.
+    | receptor.tpl[fe:FE] -> transmisor.fpl[fe] -> CANAL
+    | receptor.tpl[fe:FE] -> transmisor.timeout -> CANAL
+
+    // Nota: a priori uno podría pensar que se puede ejecutar la traza
+    //      transmisor.tpl[nfts][d] -> 
+    //      transmisor.start_timer -> 
+    //      transmisor.timeout -> CANAL
+    //      receptor.tpl[fe] -> 
+    //      transmisor.timeout -> CANAL
+    // generando un deadlock, porque no se puede llamar a timeout dos veces 
+    // seguidas, pero esto no es posible porque si receptor.fpl[nfts][d]
+    // no se ejecuta, entonces el segundo timeout tampoco se puede ejecutar.
+).
+
+||SISTEMA = (
+    transmisor:TRANSMISOR || receptor:RECEPTOR || CANAL
+).
+
 /* ========================================================================== */
 /*  Ejercicio 7                                                               */
 /* ========================================================================== */
