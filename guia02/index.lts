@@ -243,6 +243,8 @@ TRANSMISOR_ACK[d:D][ack:ACK][nfts:NFTS] = (
     | when (ack == nfts && nfts == 1) handleAck -> TRANSMISOR[0] /*(nfts+1)*/ 
     | when (ack != nfts) handleAck -> TRANSMISOR_TIMER[d][nfts]
 ).
+TIMER = ( start_timer -> (timeout -> TIMER | fpl[ACK] -> TIMER)).
+||TRANSMISOR_WITH_TIMER = ( TRANSMISOR || TIMER ).
 
 RECEPTOR = RECEPTOR[0],
 RECEPTOR[fe:FE] = (
@@ -258,30 +260,20 @@ RECEPTOR[fe:FE] = (
     )
 ).
 
-CANAL = (
-      // El dato puede perderse y se activa el timeout del transmisor.
-      transmisor.tpl[nfts:NFTS][d:D] -> transmisor.start_timer -> 
-        receptor.fpl[nfts][d] -> CANAL
-    | transmisor.tpl[nfts:NFTS][d:D] -> transmisor.start_timer -> 
-        transmisor.timeout -> CANAL
-
-      // El ack puede perderse y se activa el timeout del transmisor.
-    | receptor.tpl[fe:FE] -> transmisor.fpl[fe] -> CANAL
-    | receptor.tpl[fe:FE] -> transmisor.timeout -> CANAL
-
-    // Nota: a priori uno podría pensar que se puede ejecutar la traza
-    //      transmisor.tpl[nfts][d] -> 
-    //      transmisor.start_timer -> 
-    //      transmisor.timeout -> CANAL
-    //      receptor.tpl[fe] -> 
-    //      transmisor.timeout -> CANAL
-    // generando un deadlock, porque no se puede llamar a timeout dos veces 
-    // seguidas, pero esto no es posible porque si receptor.fpl[nfts][d]
-    // no se ejecuta, entonces el segundo timeout tampoco se puede ejecutar.
+CANAL_IDA = (
+      transmisor.tpl[nfts:NFTS][d:D] -> (
+        receptor.fpl[nfts][d] -> CANAL_IDA | pierde_dato -> CANAL_IDA
+      )
 ).
+CANAL_VUELTA = (
+      receptor.tpl[fe:FE] -> (
+        transmisor.fpl[fe] -> CANAL_VUELTA | pierde_ack -> CANAL_VUELTA
+      )
+).
+||CANAL = (CANAL_IDA || CANAL_VUELTA).
 
 ||SISTEMA = (
-    transmisor:TRANSMISOR || receptor:RECEPTOR || CANAL
+    transmisor:TRANSMISOR_WITH_TIMER || receptor:RECEPTOR || CANAL
 ).
 
 /* ========================================================================== */
