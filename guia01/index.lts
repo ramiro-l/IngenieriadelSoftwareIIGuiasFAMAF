@@ -244,14 +244,18 @@ BRAZO_SALIDA = ( extraer_prensa.objA  -> salida_sistema.objA -> BRAZO_SALIDA
 /* ========================================================================== */
 /*  Ejercicio 13                                                              */
 /* ========================================================================== */
-/* TODO: REVISAR */
 
+/* . . Alternativa ( con un tercer brazo )  . . . . . . . . . . . . . . . . . */
+
+const LARGO_CINTA = 3
 set OBJ = { a, b, c, d }
 
-CINTA = ( 
-    llegada[n:OBJ] -> 
-        parar_cinta -> 
-    brazoEntrada.extraer.cinta[n] -> CINTA ).
+ONE_BUFF = (poner[x:OBJ] -> quitar[x] -> ONE_BUFF).
+||CINTA(N=LARGO_CINTA) = ( [1..N]:ONE_BUFF ) / {
+    llegada/[1].poner, 
+    [i:2..N].poner/[i-1].quitar,
+    brazoEntrada.extraer.cinta/[N].quitar
+}@{ llegada, brazoEntrada.extraer.cinta}.
 
 BRAZO_ENTRADA = ( 
       brazoEntrada.extraer.cinta.a ->  
@@ -305,63 +309,65 @@ BRAZO_SALIDA = (
     PRENSA || TALADRO || 
     BRAZO_ENTRADA || BRAZO_INTERNO || BRAZO_SALIDA ).
 
-// . . . . . . . . . . . . . INTENTO DE GENERALIZACIÓN . . . . . . . . . . . . .
-//  ------------------------------> NO FUNCIONA <-------------------------------
+/* . . Alternativa ( con un lock )  . . . . . . . . . . . . . . . . . . . . . */
 
+const LARGO_CINTA = 3
 set OBJ = { a, b, c, d }
-set MAQUINAS = { prensa, taladro }
-set BRAZOS = { brazoEntrada, brazoInterno, brazoSalida }
-set ACCIONES = { extraer, poner }
 
-CINTA = ( 
-    llegada[n:OBJ] -> 
-        parar_cinta -> 
-    brazoEntrada.extraer.cinta[n] -> CINTA ).
+ONE_BUFF = (poner[x:OBJ] -> quitar[x] -> ONE_BUFF).
+||CINTA(N=LARGO_CINTA) = ( [1..N]:ONE_BUFF ) / {
+    llegada/[1].poner, 
+    [i:2..N].poner/[i-1].quitar, // Sincronización entre BUFFERS. 
+    brazo1.extraer.cinta/[N].quitar
+}@{ llegada, brazo1.extraer.cinta}.
 
-BRAZO_ENTRADA = ( 
-    brazoEntrada.extraer.cinta[n:OBJ] ->  
-    brazoEntrada.poner[MAQUINAS][n] -> BRAZO_ENTRADA ).
+BRAZO_1 = ( 
+    acquire -> (
+          brazo1.extraer.cinta.a  -> brazo1.poner.prensa.a  -> 
+          release -> BRAZO_1 
+        | brazo1.extraer.cinta.b  -> brazo1.poner.taladro.b -> 
+          release -> BRAZO_1 
+        | brazo1.extraer.cinta.c  -> brazo1.poner.prensa.c  -> 
+          brazo1.extraer.prensa.c -> brazo1.poner.taladro.c -> 
+          release -> BRAZO_1 
+        | brazo1.extraer.cinta.d   -> brazo1.poner.taladro.d -> 
+          brazo1.extraer.taladro.d -> brazo1.poner.prensa.d  -> 
+          release -> BRAZO_1 
+    )
+).
 
-PRENSA  = ( [BRAZOS].poner.prensa[n:OBJ] -> 
-                prensar ->
-            [BRAZOS].extraer.prensa[n] -> PRENSA ).
-TALADRO = ( [BRAZOS].poner.taladro[n:OBJ] -> 
-                taladrar ->
-            [BRAZOS].extraer.taladro[n] -> TALADRO ).
+PRENSA  = ( 
+    brazo1.poner.prensa.a -> 
+        prensar ->
+    brazoSalida.extraer.prensa.a -> PRENSA
+  | brazo1.poner.prensa.c -> 
+        prensar ->
+    brazo1.extraer.prensa.c -> PRENSA
+  | brazo1.poner.prensa.d -> 
+        prensar ->
+    brazoSalida.extraer.prensa.d -> PRENSA
+).
 
-BRAZO_INTERNO = ( 
-    brazoInterno.extraer[MAQUINAS][n:OBJ] -> 
-    brazoInterno.poner[MAQUINAS][n] -> BRAZO_INTERNO ).
+TALADRO = ( 
+    brazo1.poner.taladro.b -> 
+        taladrar ->
+    brazoSalida.extraer.taladro.b -> TALADRO
+  | brazo1.poner.taladro.c -> 
+        taladrar ->
+    brazoSalida.extraer.taladro.c -> TALADRO
+  | brazo1.poner.taladro.d -> 
+        taladrar ->
+    brazo1.extraer.taladro.d -> TALADRO
+).
 
 BRAZO_SALIDA = ( 
-    brazoSalida.extraer[MAQUINAS][n:OBJ] ->
-    salida_sistema -> BRAZO_SALIDA ).
+    brazoSalida.extraer.{ prensa.a, taladro.b, taladro.c, prensa.d } ->
+    salida_sistema -> BRAZO_SALIDA
+).
 
-CONTROLADOR = (
-    brazoEntrada.extraer.cinta.a ->
-        brazoEntrada.poner.prensa.a -> 
-        brazoSalida.extraer.prensa.a -> 
-    salida_sistema -> CONTROLADOR
-  | brazoEntrada.extraer.cinta.b -> 
-        brazoEntrada.poner.taladro.b -> 
-        brazoSalida.extraer.taladro.b ->
-    salida_sistema -> CONTROLADOR
-  | brazoEntrada.extraer.cinta.c -> 
-        brazoEntrada.poner.prensa.c -> 
-            brazoInterno.extraer.prensa.c -> 
-            brazoInterno.poner.taladro.c -> 
-        brazoSalida.extraer.taladro.c ->
-    salida_sistema -> CONTROLADOR
-  | brazoEntrada.extraer.cinta.d -> 
-        brazoEntrada.poner.taladro.d ->
-            brazoInterno.extraer.taladro.d -> 
-            brazoInterno.poner.prensa.d -> 
-        brazoSalida.extraer.prensa.d ->
-    salida_sistema -> CONTROLADOR
-) + { [BRAZOS][ACCIONES][MAQUINAS][OBJ] }.
+LOCK = ( acquire -> release -> LOCK ).
 
 ||CELULA = (
     CINTA || 
     PRENSA || TALADRO || 
-    BRAZO_ENTRADA || BRAZO_INTERNO || BRAZO_SALIDA || 
-    CONTROLADOR ).
+    BRAZO_1 || BRAZO_SALIDA || LOCK ).
