@@ -8,11 +8,11 @@ guia{n}/
     guia{n}.pdf
 	index.lts
 	images/
-utilidades/
-    """ Algunos ejemplo que son útiles para resolver los ejercicios. """
-    *.lts
 teórico/
     """ Algunos ejemplo que se dieron en el teórico. """
+    *.lts
+utilidades/
+    """ Algunos ejemplo que son útiles para resolver los ejercicios. """
     *.lts
 ```
 
