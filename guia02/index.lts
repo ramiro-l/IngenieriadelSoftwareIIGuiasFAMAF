@@ -380,11 +380,69 @@ veamos que es una simulación
     (i)  s3 --c--> s0 => t2 --c--> t0 y (s0, t0) ∈ R   TRUE
     (ii) t2 --c--> t0 => s3 --c--> s0 y (s0, t0) ∈ R   TRUE
 
-Concluimos que S1 y S2 son bisimilares, es decir, se comportan igual.
+Concluimos que S1 y S2 son bisimilares.
+
 */
 /* ========================================================================== */
 /*  Ejercicio 12                                                              */
 /* ========================================================================== */
+
+P = ( a -> ( t -> b -> STOP
+           | t -> c -> STOP )
+).
+||Q = P \ { t }.
+
+/*
+Sin ninguna minimización Q nos queda:
+
+Q0 = (
+    S = ( a0, a1, a2, a3, a4 ),
+    s_0 = a0,
+    E = { a, b, c },
+    -> = {  (a0, a, a1),
+            (a1, tau, a2), (a1, tau, a4)
+            (a2, c, a3),
+            (a4, b, a3)
+         }
+)
+
+Ahora Q minimizado sin cambiar la option:
+
+Q1 = (
+    S = ( b0, b1, b2, b3 ),
+    s_0 = b0,
+    E = { a, b, c },
+    -> = {  (b0, a, b1), (b0, a, b3),
+            (b1, c, b2),
+            (b3, b, b2)
+         }
+)
+
+y luego el Q minimizado con la option:
+
+Q2 = Q0
+
+
+Entonces, claramente Q0 y Q2 son débilmente bisimilares
+(simplemente R = { (ai, ci): i = 0,1,2,3,4 } ).
+
+Ahora analicemos si Q0 y Q1 son débilmente bisimilares:
+
+Primero sabemos siempre que (a0, b0) ∈ R, entonces:
+    (i)  a0 --a--> a1 => 
+        ( b0 --a--> b1 y (a1, b1) ∈ R ) || ( b0 --a--> b3 y (a1, b3) ∈ R ) 
+    (ii) b0 --a--> b1 => a0 --a--> a1 y (a1, b1) ∈ R
+         b0 --a--> b3 => a0 --a--> a1 y (a1, b3) ∈ R 
+por lo tanto (a1, b1) ∈ R y (a1, b3) ∈ R. 
+
+Por ahora tenemos que { (a0, b0), (a1, b1), (a1, b3) } ⊆ R, sigamos
+
+TODO: REVISAR ESTO ...
+con (a1, b1) ∈ R:
+    (i)  a1 --tau--> a2 => b1 ???
+         a1 --tau--> a4 => b1 ???
+    (ii) b1 --c--> b2 => a1 --tau--> a2 --c--> a3 = a1 ==c==> a3 y (a3, b2) ∈ R
+*/
 
 /* ========================================================================== */
 /*  Ejercicio 13                                                              */
