@@ -65,7 +65,9 @@ SEMAPHORE[v:0..N] = (
     | when(v == N) acquire -> release -> SEMAPHORE[N] ),
 SEMAPHORE[N+1] = ERROR. // Esto sucede si alguien hace up sin antes hacer down.
 
-READER = ( down -> read[VAR_VALUES] -> up -> READER ).
+READER = ( 
+    down -> read[VAR_VALUES] -> up -> READER 
+) + { write[VAR_VALUES], acquire }.
 WRITER = ( 
       down -> read[VAR_VALUES] -> up -> WRITER
     | acquire -> write[VAR_VALUES] -> release -> WRITER 
