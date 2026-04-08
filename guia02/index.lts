@@ -225,6 +225,7 @@ CANAL = (
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  //
 
 set D = { a, b }
+
 range ACK = 0..1
 range SEQ = 0..1
 range NFTS = 0..1
@@ -266,12 +267,12 @@ CANAL_IDA = (
       transmisor.tpl[nfts:NFTS][d:D] -> (
         receptor.fpl[nfts][d] -> CANAL_IDA | pierde_dato -> CANAL_IDA
       )
-).
+) \ { pierde_dato }.
 CANAL_VUELTA = (
       receptor.tpl[fe:FE] -> (
         transmisor.fpl[fe] -> CANAL_VUELTA | pierde_ack -> CANAL_VUELTA
       )
-).
+) \ { pierde_ack }.
 ||CANAL = (CANAL_IDA || CANAL_VUELTA).
 
 ||SISTEMA = (
