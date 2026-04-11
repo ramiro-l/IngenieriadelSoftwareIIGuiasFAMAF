@@ -1,0 +1,37 @@
+/* ========================================================================== */
+/*  Ejercicio 2                                                               */
+/* ========================================================================== */
+
+/* . . Código del Libro  . . . . . . . . . . . . . . . . . . . . . . . . . .  */
+
+PHIL = (sitdown->right.get->left.get
+          ->eat->left.put->right.put
+          ->arise->PHIL).
+
+FORK = (get -> put -> FORK).
+
+||DINERS(N=5)= 
+   forall [i:0..N-1] 
+   (phil[i]:PHIL 
+   ||{phil[i].left,phil[((i-1)+N)%N].right}::FORK).
+
+/* . . Código con BUTLER  . . . . . . . . . . . . . . . . . . . . . . . . . . */
+
+PHIL = (sitdown ->
+            right.get -> left.get ->
+                eat ->
+            left.put -> right.put ->
+        arise -> PHIL).
+
+FORK = (get -> put -> FORK).
+
+||DINERS(N = 5) = forall [i:0..N-1] 
+   ( phil[i]:PHIL || { phil[i].left, phil[((i - 1) + N) % N].right }::FORK ).
+
+BUTLER(N = 4) = BUTLER[N],
+BUTLER[i:0..N] = (
+    when (i > 0) sitdown -> BUTLER[i-1]
+  | when (i < N) arise -> BUTLER[i+1]
+).
+
+||SYSTEM = (DINERS(5) || phil[0..4]::BUTLER).
