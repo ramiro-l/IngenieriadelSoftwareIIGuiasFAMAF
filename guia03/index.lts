@@ -35,3 +35,151 @@ BUTLER[i:0..N] = (
 ).
 
 ||SYSTEM = (DINERS(5) || phil[0..4]::BUTLER).
+
+/* ========================================================================== */
+/*  Ejercicio 11                                                              */
+/* ========================================================================== */
+
+A = ( a -> ( b -> A | a ->A ) | b -> a -> A ).
+
+property PS = ( a -> ( b -> A | a ->A ) | b -> a -> A ).
+
+/* ========================================================================== */
+/*  Ejercicio 12                                                              */
+/* ========================================================================== */
+
+/* ========================================================================== */
+/*  Ejercicio 13                                                              */
+/* ========================================================================== */
+
+ELEVATOR(MAX_PERSONS=10) = ELEVATOR[0],
+ELEVATOR[i:0..MAX_PERSONS] = ( 
+    when (i < MAX_PERSONS) enter -> ELEVATOR[i+1]
+  | when (i > 0) exit -> ELEVATOR[i-1]
+).
+
+property SAFETY_PROP(MAX_PERSONS=10) = SAFETY_PROP[0],
+SAFETY_PROP[i:0..MAX_PERSONS] = ( 
+    when (i < MAX_PERSONS) enter -> SAFETY_PROP[i+1]
+  | when (i > 0) exit -> SAFETY_PROP[i-1]
+).
+
+||SYSTEM = (ELEVATOR(10) || SAFETY_PROP(10)).
+
+/* ========================================================================== */
+/*  Ejercicio 14                                                              */
+/* ========================================================================== */
+
+/*
+- CONDICIÓN: Se pueden buscar moras, pero solo un vecino a la vez. 
+
+|-----------------------------------------------------|
+| |---------------|                                   |
+| | CASA VECINO 1 |                                   | -> Campo del vecino 1
+| |---------------| (BANDERA = baja)                  |
+|                                                     |
+|*****************************************************|
+|********* MORAS ***************** MORAS *************|
+|*****************************************************|
+|                                                     |
+| |---------------|                                   |
+| | CASA VECINO 2 |                                   | -> Campo del vecino 2
+| |---------------|  (BANDERA = baja)                 |
+|-----------------------------------------------------|
+
+Si un vecino desea entrar a su campo, iza (sube) su propia bandera. 
+
+Si este vecino ve que la bandera del otro ya estaba izada (subida), 
+arría (baja) la bandera propia e intenta nuevamente.
+
+Si, en cambio, la bandera del otro vecino no está izada (subida),
+ingresa al campo y recoge las moras que desea. 
+
+Una vez que haya culminado sale del campo y arría (baja) su bandera.
+*/
+
+// - - - - - - - - - - - Representación de la BANDERA - - - - - - - - - - - - //
+const True = 1 
+const False = 0
+range Bool = False..True
+
+set BoolActions = { setTrue, setFalse, [False], [True] }
+BOOL_VAR = VAL[False],
+VAL[v:Bool] = ( setTrue  -> VAL[True]  // pasar a True
+              | setFalse -> VAL[False] // pasar a False
+              | [v]      -> VAL[v] ).  // consultar el valor actual
+
+||FLAG = (BOOL_VAR).
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  //
+
+// - - - - - - - - - - - Representación de un VECINO - - - - - - - - - - - -  //
+NEIGHBOR = (
+    flag.setTrue -> (
+      checkOther.flag[False] -> enterField -> collectBerries -> exitField -> flag.setFalse -> NEIGHBOR
+    | checkOther.flag[True] -> flag.setFalse -> NEIGHBOR )
+).
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  //
+
+set Neighbors = {n1, n2}
+||SYSTEM = ( Neighbors.flag:FLAG || Neighbors:NEIGHBOR ) 
+/ { n1/n2.checkOther, n2/n1.checkOther }
+@ { Neighbors.flag.setTrue, Neighbors.flag.setFalse,
+    Neighbors.enterField, Neighbors.exitField, Neighbors.collectBerries }.
+
+// - - - - - - - - - - - - - - - PROPIEDADES - - - - - - - - - - - - - - - -  //
+property MUTUAL_EXCLUSION_PROP = (
+    [n:Neighbors].enterField -> [n].exitField -> MUTUAL_EXCLUSION_PROP 
+).
+
+// Esto garantiza que siempre algún vecino va a poder entrar a su campo.
+progress NEIGHBOR_1_COLLECTS_BERRIES_PROP = {n1.collectBerries}
+progress NEIGHBOR_2_COLLECTS_BERRIES_PROP = {n2.collectBerries}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  //
+
+||CHECK = (SYSTEM || MUTUAL_EXCLUSION_PROP).
+
+/* Reemplazos para las preguntas:
+||CHECK = (SYSTEM || MUTUAL_EXCLUSION_PROP)
+                                       << {n1.flag.setTrue, n2.flag.setTrue}.
+
+||CHECK = (SYSTEM || MUTUAL_EXCLUSION_PROP) << {n1.flag.setTrue}.
+*/
+
+/*
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+¿Existe alguna circunstancia adversa en la cual los vecinos no puedan progresar? 
+- Deadlock no tiene (lo verifico LTSA).
+
+- Pero al agregar ` << {n1.flag.setTrue, n2.flag.setTrue}.` conseguimos que 
+  fallen los progress, es decir que existe una forma de que nunca se colecten 
+  las moras.La traza de ejemplo sería:
+	        n2.flag.setTrue
+	        n1.flag.setTrue   |
+	        tau               |---> Ciclo infinito
+	        n1.flag.setFalse  |
+            ...
+  Básicamente ambos levantan las banderas "al mismo tiempo", luego uno de los 
+  dos nunca mira la bandera del otro para entrar al campo, por lo tanto nunca
+  entra ese, pero el otro tampoco puede entrar porque la bandera del otro está 
+  levantada.
+
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+¿Qué ocurriría si alguno de los vecinos es egoísta?
+
+- Agregamos por ejemplo `<< {n1.flag.setTrue}.`
+  Lo que sucede es que el vecino n2, nunca puede recolectar las moras. 
+  La traza de ejemplo sería:
+        	n1.flag.setTrue    |
+        	tau                |
+        	n1.enterField      |---> Ciclo infinito
+        	n1.collectBerries  |
+        	n1.exitField       |
+        	n1.flag.setFalse   |
+            ...
+
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+*/
