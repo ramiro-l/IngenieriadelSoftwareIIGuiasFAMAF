@@ -36,6 +36,33 @@ BUTLER[i:0..N] = (
 
 ||SYSTEM = (DINERS(5) || phil[0..4]::BUTLER).
 
+/* . . Código del LIBRO . . . . . . . . . . . . . . . . . . . . . . . . . . . */
+
+PHIL(I=0)
+    = ( when (I%2 == 0) sitdown -> 
+                        left.get -> right.get ->
+                        eat ->
+                        left.put -> right.put -> 
+                        arise -> PHIL
+      | when (I%2 == 1) sitdown ->
+                        right.get -> left.get ->
+                        eat ->
+                        left.put -> right.put ->
+                        arise -> PHIL
+).
+
+FORK = (get -> put -> FORK).
+
+||DINERS(N = 5) = forall [i:0..N-1] 
+   ( phil[i]:PHIL(i) || { phil[i].left, phil[((i - 1) + N) % N].right }::FORK ).
+/*
+La idea es que los filósofos parses (0, 2, 4) tomen primero el tenedor izquierdo 
+y luego el derecho, mientras que los filósofos impares (1, 3) tomen primero el 
+tenedor derecho y luego el izquierdo.
+
+De esta manera se evita la posibilidad de que todos los filósofos tomen un 
+tenedor y esperen por el otro, lo que causaría un deadlock.
+*/
 /* ========================================================================== */
 /*  Ejercicio 11                                                              */
 /* ========================================================================== */
@@ -47,6 +74,8 @@ property PS = ( a -> ( b -> A | a ->A ) | b -> a -> A ).
 /* ========================================================================== */
 /*  Ejercicio 12                                                              */
 /* ========================================================================== */
+
+// TODO: Completar esto ...
 
 /* ========================================================================== */
 /*  Ejercicio 13                                                              */
@@ -115,8 +144,11 @@ VAL[v:Bool] = ( setTrue  -> VAL[True]  // pasar a True
 // - - - - - - - - - - - Representación de un VECINO - - - - - - - - - - - -  //
 NEIGHBOR = (
     flag.setTrue -> (
-      checkOther.flag[False] -> enterField -> collectBerries -> exitField -> flag.setFalse -> NEIGHBOR
+      checkOther.flag[False] -> ENTER
     | checkOther.flag[True] -> flag.setFalse -> NEIGHBOR )
+),
+ENTER = (
+    enterField -> collectBerries -> exitField -> flag.setFalse -> NEIGHBOR
 ).
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  //
 
@@ -181,5 +213,136 @@ progress NEIGHBOR_2_COLLECTS_BERRIES_PROP = {n2.collectBerries}
             ...
 
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 */
+
+/* ========================================================================== */
+/*  Ejercicio 15                                                              */
+/* ========================================================================== */
+
+// - - - - - - - - - - - Representación de la BANDERA - - - - - - - - - - - - //
+const True = 1 
+const False = 0
+range Bool = False..True
+
+set BoolActions = { setTrue, setFalse, [False], [True] }
+BOOL_VAR = VAL[False],
+VAL[v:Bool] = ( setTrue  -> VAL[True]  // pasar a True
+              | setFalse -> VAL[False] // pasar a False
+              | [v]      -> VAL[v] ).  // consultar el valor actual
+
+||FLAG = (BOOL_VAR).
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  //
+
+// - - - - - - - - - - - Representación del TURNO - - - - - - - - - - - - - - //
+range Turn = 1..2
+
+TURN = T[1],
+T[t:Turn] = (setTurn[nt:Turn] -> T[nt] | [t] -> T[t]).
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  //
+
+// - - - - - - - - - - - Representación de un VECINO - - - - - - - - - - - -  //
+NEIGHBOR = (flag.setTrue -> passTurn -> WAIT),
+WAIT = (
+    checkOther.flag[True]  -> (othersTurn -> WAIT | myTurn -> ENTER)
+  | checkOther.flag[False] -> ENTER
+),
+ENTER = (
+    enterField -> collectBerries -> exitField -> flag.setFalse -> NEIGHBOR
+).
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  //
+
+set Neighbors = {n1, n2}
+||SYSTEM = ( Neighbors.flag:FLAG || Neighbors:NEIGHBOR || turn:TURN ) 
+/ { 
+    n2/n1.checkOther, 
+        n1.passTurn/turn.setTurn[2], turn[2]/n1.othersTurn, turn[1]/n1.myTurn,
+    n1/n2.checkOther, 
+        n2.passTurn/turn.setTurn[1], turn[1]/n2.othersTurn, turn[2]/n2.myTurn
+  }
+@ { Neighbors.flag.setTrue, Neighbors.flag.setFalse, Neighbors.passTurn,
+    Neighbors.enterField, Neighbors.exitField, Neighbors.collectBerries }.
+
+// - - - - - - - - - - - - - - - PROPIEDADES - - - - - - - - - - - - - - - -  //
+property MUTUAL_EXCLUSION_PROP = (
+    [n:Neighbors].enterField -> [n].exitField -> MUTUAL_EXCLUSION_PROP 
+).
+
+// Esto garantiza que siempre algún vecino va a poder entrar a su campo.
+progress NEIGHBOR_1_COLLECTS_BERRIES_PROP = {n1.collectBerries}
+progress NEIGHBOR_2_COLLECTS_BERRIES_PROP = {n2.collectBerries}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  //
+
+||CHECK = (SYSTEM || MUTUAL_EXCLUSION_PROP).
+
+/* Reemplazos para las preguntas:
+||CHECK = (SYSTEM || MUTUAL_EXCLUSION_PROP)
+                                       << {n1.flag.setTrue, n2.flag.setTrue}.
+
+||CHECK = (SYSTEM || MUTUAL_EXCLUSION_PROP) << {n1.flag.setTrue}.
+*/
+
+/*
+Ahora si, al asignar las prioridades, no se rompen las propiedades.
+*/
+
+
+/* ========================================================================== */
+/*  Ejercicio 16                                                              */
+/* ========================================================================== */
+
+/*  Lo probe y efectivamente da el camino más corto porque en particular
+    si encuentra un camino para ganar, va a ser el más corto por la forma
+    del laberinto.
+    Sin embargo, podemos agregar que de la pos 4 pueda ir a la 7, y
+    ahí existe un camino más largo partiendo del 6. Pero igualmente
+    sigue dando el camino más corto, esto porque? Al parecer hace BFS,
+    por eso siempre encuentra el camino más corto.                            */
+
+MAZE(INITIAL_POSITION=6) = (enter-> POS[INITIAL_POSITION]),
+
+POS[0] = (
+      north -> WIN 
+    | east -> POS[1]
+),
+
+POS[1] = (
+      west -> POS[0] 
+    | east -> POS[2]
+    | south -> POS[4]
+),
+
+POS[2] = (
+      west -> POS[1] 
+    | south -> POS[5]
+),
+
+POS[3] = (
+      east -> POS[4] 
+    | south -> POS[6]
+),
+
+POS[4] = (
+      north -> POS[1] 
+    | west -> POS[3]
+),
+
+POS[5] = (
+      north -> POS[2] 
+    | south -> POS[8]
+),
+
+POS[6] = (
+      north -> POS[3] 
+),
+
+POS[7] = (
+      east -> POS[8] 
+),
+
+POS[8] = (
+      north -> POS[5] 
+    | west -> POS[7]
+),
+
+WIN = (win -> STOP).
